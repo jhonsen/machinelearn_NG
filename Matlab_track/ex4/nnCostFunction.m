@@ -20,7 +20,7 @@ Theta1 = reshape(nn_params(1:hidden_layer_size * (input_layer_size + 1)), ...
                  hidden_layer_size, (input_layer_size + 1)); % size is 25x401
 
 Theta2 = reshape(nn_params((1 + (hidden_layer_size * (input_layer_size + 1))):end), ...
-                 num_labels, (hidden_layer_size + 1));  % size is 25x401
+                 num_labels, (hidden_layer_size + 1));  % size is 10x26
 
 % Setup some useful variables
 m = size(X, 1);
@@ -94,21 +94,48 @@ J = J + (lambda/(2*m)) * ( sum(sum(Theta1(:,2:end).^2)) + sum(sum(Theta2(:,2:end
     
 
 % <<<<<<<<<<<<<<<<<<<<<<<<<<<<PART 2>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+% Using vectrization
+% As outlined in the programming tutorial
 
+% Step 1. 
+n = size(X,2) +1;
+h = hidden_layer_size;
+r = num_labels;
 
+a1 = [ones(m,1) X];
+z2 = a1 * Theta1';     %<<< Step 2
+gz2 = sigmoid(z2);    
+a2 = [ones(m,1) gz2];
+z3 = a2 * Theta2';
+gz3 = sigmoid(z3);
+a3 = gz3;                        % <<< size of a3 is 5000x10
 
+% Step 2
+d3 = a3 - y_matrix;          % <<< size is 5000x10
 
+% Step 4
+d2 = d3 * Theta2(:,2:end) .* sigmoidGradient(z2); %<<< 5000x10  times 10x25 = 5000x25
 
+% Step 5
+Delta1 =  d2' * a1;                      %<<< 25x401
 
+% STep 6
+Delta2 =  d3' * a2;                      %<<< 10x26
+    
+% Step 7
+Theta1_grad = (1/m) .* Delta1   ;
+Theta2_grad = (1/m) .* Delta2   ;
 
+% <<<<<<<<<<<<<<<<<<<<<<<<<<<<PART 3>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+Theta1(:,1) = 0;
+Theta2(:,1) = 0;
 
+Theta1 = Theta1 .* (lambda / m);
+Theta2 = Theta2 .* (lambda / m);
 
-
-
-
-
-% -------------------------------------------------------------
+Theta1_grad = Theta1_grad + Theta1 ;
+Theta2_grad = Theta2_grad + Theta2 ; 
 
 % =========================================================================
 
